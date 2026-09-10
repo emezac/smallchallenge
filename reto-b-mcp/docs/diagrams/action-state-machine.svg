@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="820" viewBox="0 0 1600 820" role="img" aria-labelledby="title desc">
+  <title id="title">Reto B — máquina de estados de una propuesta de bloqueo</title>
+  <desc id="desc">Una propuesta pasa de pendiente de confirmación a confirmada y ejecutada mediante una UI humana y un worker. Los estados terminales no se reintentan ciegamente.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111d"/><stop offset="1" stop-color="#0b1526"/></linearGradient>
+    <marker id="t" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#59d4c5"/></marker>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#f2bd5d"/></marker>
+    <marker id="r" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#f37783"/></marker>
+    <style>.h{font:800 30px 'DejaVu Sans',sans-serif}.b{font:400 18px 'DejaVu Sans',sans-serif}.m{font:700 17px 'DejaVu Sans Mono',monospace}.n{font:800 21px 'DejaVu Sans',sans-serif}.flow{fill:none;stroke:#59d4c5;stroke-width:4;marker-end:url(#t)}.warn{fill:none;stroke:#f2bd5d;stroke-width:3;marker-end:url(#a)}.stop{fill:none;stroke:#f37783;stroke-width:3;stroke-dasharray:9 8;marker-end:url(#r)}</style>
+  </defs>
+  <rect width="1600" height="820" fill="url(#bg)"/>
+  <text x="80" y="72" class="m" fill="#59d4c5">RETO B · MÁQUINA DE ESTADOS</text>
+  <text x="80" y="122" class="h" fill="#f5f8fc">La propuesta y la ejecución están separadas por diseño.</text>
+  <g transform="translate(80 275)">
+    <rect width="255" height="130" rx="24" fill="#18363d" stroke="#59d4c5" stroke-width="3"/><text x="28" y="54" class="n" fill="#effffb">PENDING_CONFIRMATION</text><text x="28" y="88" class="b" fill="#c9eee6">Creada por MCP.</text><text x="28" y="114" class="m" fill="#8deddc">tarjeta sigue ACTIVE</text>
+  </g>
+  <g transform="translate(520 275)">
+    <rect width="215" height="130" rx="24" fill="#3a2c14" stroke="#f2bd5d" stroke-width="3"/><text x="28" y="59" class="n" fill="#fff5dd">CONFIRMED</text><text x="28" y="92" class="b" fill="#f4dbad">UI humana aprobó.</text>
+  </g>
+  <g transform="translate(920 275)">
+    <rect width="175" height="130" rx="24" fill="#15293b" stroke="#64a7d7" stroke-width="3"/><text x="28" y="59" class="n" fill="#eaf5ff">EXECUTING</text><text x="28" y="92" class="b" fill="#c8d8e8">Worker tomó trabajo.</text>
+  </g>
+  <g transform="translate(1280 275)">
+    <rect width="210" height="130" rx="24" fill="#163d32" stroke="#59d4c5" stroke-width="3"/><text x="28" y="59" class="n" fill="#effffb">EXECUTED</text><text x="28" y="92" class="b" fill="#c9eee6">Efecto simulado único.</text>
+  </g>
+  <path class="flow" d="M335 340H520"/><text x="363" y="316" class="m" fill="#8deddc">UI: confirmar</text>
+  <path class="flow" d="M735 340H920"/><text x="749" y="316" class="m" fill="#8deddc">worker consume</text>
+  <path class="flow" d="M1095 340H1280"/><text x="1115" y="316" class="m" fill="#8deddc">Core simulado</text>
+  <path class="stop" d="M207 405V580H480"/><text x="105" y="553" class="m" fill="#ffadb6">rechazo o expiración</text>
+  <rect x="480" y="520" width="200" height="120" rx="22" fill="#3a1920" stroke="#f37783" stroke-width="3"/><text x="507" y="568" class="n" fill="#fff1f2">REJECTED / EXPIRED</text><text x="507" y="603" class="b" fill="#ffd8dd">Terminal: sin efecto.</text>
+  <path class="warn" d="M1008 405V580H820"/><text x="825" y="553" class="m" fill="#ffd784">fallo conocido</text>
+  <rect x="820" y="520" width="200" height="120" rx="22" fill="#3a2c14" stroke="#f2bd5d" stroke-width="3"/><text x="848" y="568" class="n" fill="#fff5dd">EXECUTION_FAILED</text><text x="848" y="603" class="b" fill="#f4dbad">Terminal: reportar.</text>
+  <path class="warn" d="M1095 405V695H1240"/><text x="1110" y="670" class="m" fill="#ffd784">resultado ambiguo</text>
+  <rect x="1240" y="635" width="255" height="120" rx="22" fill="#3a2c14" stroke="#f2bd5d" stroke-width="3"/><text x="1268" y="683" class="n" fill="#fff5dd">EXECUTION_UNKNOWN</text><text x="1268" y="718" class="b" fill="#f4dbad">Reconciliar; no reintentar.</text>
+  <text x="80" y="760" class="m" fill="#a9b9ca">INVARIANTE: propose_action nunca cambia la tarjeta. Solo EXECUTED comunica éxito; un efecto por action_id preserva idempotencia.</text>
+</svg>

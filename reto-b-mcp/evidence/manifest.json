@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "captured_at": "Sanitized public evidence summary",
+  "runtime": {
+    "ruby": "3.4.1",
+    "rails": "8.1.3.1",
+    "mcp": "1.3.0",
+    "sqlite3": "2.9.6",
+    "jwt": "3.2.0"
+  },
+  "tests": {
+    "command": "bundle exec ruby bin/verify",
+    "runs": 26,
+    "assertions": 113,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "mcp": {
+    "authorization": "OAuth delegated access token",
+    "scope": "bank:actions",
+    "allowed_tools": [
+      "get_action_status",
+      "get_card_status",
+      "propose_action"
+    ],
+    "aifindr_enabled": true
+  },
+  "published_prompt": {
+    "type": "Agent Workflow",
+    "behavioral_contract_verified": true,
+    "prompt_text_version_and_digest_excluded": true
+  },
+  "integrated_acceptance": {
+    "oauth_scope_granted": true,
+    "exact_tool_discovery": true,
+    "readable_card_status_after_publish": true,
+    "proposal_without_execution": true,
+    "human_confirmation": "CONFIRMED",
+    "worker_final_action_status": "EXECUTED",
+    "worker_final_card_status": "BLOCKED",
+    "conversation_bypass_refused": true,
+    "part_1_minimum_clarification_regression": true,
+    "secrets_or_grants_recorded": false
+  },
+  "browser_live_validation": {
+    "environment": "MCP host via a temporary HTTPS origin",
+    "start_card_status": "ACTIVE",
+    "proposal_status_before_human_confirmation": "PENDING_CONFIRMATION",
+    "human_confirmation_page_loaded": true,
+    "confirmation_result": "CONFIRMED",
+    "worker_result": "EXECUTED",
+    "final_card_status_from_aifindr": "BLOCKED",
+    "identifiers_or_grants_recorded": false
+  },
+  "not_run": [
+    "production reverse proxy or durable hosting",
+    "public browser rejection and replay paths",
+    "large multi-turn evaluation dataset",
+    "Docker image build because Docker is unavailable"
+  ],
+  "excluded_from_public_package": [
+    "temporary public origin",
+    "OAuth tenant and client identifiers",
+    "prompt text, version, digest and publication time",
+    "tokens, cookies, grants and logs"
+  ]
+}

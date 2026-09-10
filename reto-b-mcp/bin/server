@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require 'bundler/setup'
+Dir.chdir(File.expand_path('..', __dir__))
+load Gem.bin_path('puma', 'puma')

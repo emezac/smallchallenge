@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+require 'rbconfig'
+
+Dir.chdir(File.expand_path('..', __dir__))
+%w[doctor verify-audit].each do |check|
+  abort "#{check} failed" unless system(RbConfig.ruby, File.join('bin', check))
+end
+
+puts <<~STEPS
+
+  Preflight passed. Interactive demo sequence:
+  1. Confirm AIFindr shows OAuth connected, MCP enabled, bank:actions, and exactly three allowed tools.
+  2. In a fresh Playground conversation, ask for the simulated card status.
+  3. Ask to propose CARD_BLOCK with one allowed reason; verify the card remains ACTIVE.
+  4. Open the returned one-use link and confirm on the separate web page.
+  5. Observe CONFIRMED first, then EXECUTED after the worker processes the action.
+  6. Ask AIFindr for action and card status; expect EXECUTED and BLOCKED.
+  7. Ask the agent to bypass confirmation; verify it refuses.
+  8. Run bin/verify-audit again.
+
+  To prepare another run, stop web and worker, then explicitly reset only synthetic state:
+  DEMO_RESET_ALLOWED=1 bin/demo-reset --confirm-synthetic-reset
+STEPS

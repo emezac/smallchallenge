@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+require 'bundler/setup'
+require 'json'
+require_relative '../lib/authentication'
+require_relative '../lib/runtime'
+Dir.chdir(File.expand_path('..', __dir__))
+checks = { ruby: RUBY_VERSION, mcp: Gem.loaded_specs.fetch('mcp').version.to_s }
+begin
+  secret = ENV.fetch('SECRET_KEY_BASE')
+  raise 'weak or reused secrets' if secret.bytesize < 64 || secret == ENV.fetch('AUDIT_KEY')
+  domain = Gateway::Runtime.domain
+  checks[:database] = 'PASS'
+  checks[:audit] = domain.verify_audit ? 'PASS' : 'FAIL'
+  key_options = if ENV['OAUTH_JWKS_FILE'] && !ENV['OAUTH_JWKS_FILE'].empty?
+    { jwks: File.read(ENV.fetch('OAUTH_JWKS_FILE')) }
+  else
+    { public_key: File.read(ENV.fetch('OAUTH_PUBLIC_KEY_FILE')) }
+  end
+  auth = Gateway::Authentication.new(issuer: ENV.fetch('OAUTH_ISSUER'),
+    audience: ENV.fetch('PUBLIC_ORIGIN').delete_suffix('/') + '/mcp', **key_options)
+  checks[:oauth_configuration] = 'PASS_LOCAL_ONLY'
+  checks[:aifindr_live_connection] = 'NOT_CHECKED_BY_DOCTOR'
+  evidence_path = File.expand_path('../evidence/manifest.json', __dir__)
+  if File.file?(evidence_path)
+    evidence = JSON.parse(File.read(evidence_path))
+    acceptance = evidence.fetch('integrated_acceptance', {})
+    required = %w[oauth_scope_granted exact_tool_discovery proposal_without_execution
+      part_1_minimum_clarification_regression]
+    terminal = acceptance['human_confirmation'] == 'CONFIRMED' &&
+      acceptance['worker_final_action_status'] == 'EXECUTED' &&
+      acceptance['worker_final_card_status'] == 'BLOCKED'
+    checks[:aifindr_e2e_evidence] = required.all? { |name| acceptance[name] == true } && terminal ? 'PASS_RECORDED' : 'FAIL'
+  else
+    checks[:aifindr_e2e_evidence] = 'NOT_RECORDED'
+  end
+rescue StandardError => error
+  # No exception messages: config values can include paths or credentials.
+  checks[:configuration] = 'FAIL'
+  checks[:error_class] = error.class.name
+ensure
+  domain&.close
+end
+puts JSON.pretty_generate(checks)
+exit(checks.values.include?('FAIL') ? 1 : 0)

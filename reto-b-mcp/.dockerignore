@@ -1,0 +1,11 @@
+.env*
+vendor
+.bundle
+storage
+tmp
+log
+.git
+evidence
+*.pem
+*.key
+secrets

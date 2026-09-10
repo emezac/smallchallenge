@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+require 'bundler/setup'
+require_relative '../lib/runtime'
+
+Dir.chdir(File.expand_path('..', __dir__))
+unless ARGV == ['--confirm-synthetic-reset'] && ENV['DEMO_RESET_ALLOWED'] == '1'
+  abort 'Refusing reset. Use DEMO_RESET_ALLOWED=1 bin/demo-reset --confirm-synthetic-reset.'
+end
+if %w[production prod].include?(ENV.fetch('RAILS_ENV', ENV.fetch('RACK_ENV', '')).downcase)
+  abort 'Refusing reset in a production environment.'
+end
+
+domain = Gateway::Runtime.domain
+begin
+  result = domain.reset_demo
+  puts "Synthetic demo reset recorded. Card #{result[:card_alias]} is #{result[:status]}. Audit history was preserved."
+rescue Gateway::Conflict
+  abort 'Reset refused because an active or ambiguous action exists.'
+ensure
+  domain.close
+end

@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+manifest="$root/evidence/manifest.json"
+
+[[ -f "$manifest" ]] || { printf 'Falta el manifiesto de evidencia: %s\n' "$manifest" >&2; exit 1; }
+command -v jq >/dev/null || { printf 'Este visor requiere jq.\n' >&2; exit 127; }
+cd "$root"
+
+if [[ "${1:-}" == "--verify" ]]; then
+  printf 'Ejecutando la suite local del Gateway MCP…\n\n'
+  BUNDLE_PATH=vendor/bundle bundle exec ruby bin/verify
+  printf '\n'
+elif [[ -n "${1:-}" ]]; then
+  printf 'Uso: %s [--verify]\n' "$0" >&2
+  exit 64
+fi
+
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  cyan=$'\033[36m'; green=$'\033[32m'; yellow=$'\033[33m'; dim=$'\033[2m'; bold=$'\033[1m'; reset=$'\033[0m'
+else
+  cyan=''; green=''; yellow=''; dim=''; bold=''; reset=''
+fi
+
+headline() { printf '\n%s%s%s\n' "$bold$cyan" "$1" "$reset"; printf '%s\n' '────────────────────────────────────────────────────────────────'; }
+label() { printf '  %s%-26s%s %s\n' "$dim" "$1" "$reset" "$2"; }
+pass() { [[ "$1" == "true" ]] && printf '%sCONFIRMED%s' "$green" "$reset" || printf 'NOT CONFIRMED'; }
+limit_label() {
+  case "$1" in
+    'production reverse proxy or durable hosting') printf 'Proxy inverso o hosting durable de producción.' ;;
+    'public browser rejection and replay paths') printf 'Rechazo y replay a través del navegador público.' ;;
+    'large multi-turn evaluation dataset') printf 'Dataset grande de evaluación multi-turn.' ;;
+    'Docker image build because Docker is unavailable') printf 'Build de imagen Docker (Docker no estaba disponible).' ;;
+    *) printf '%s' "$1" ;;
+  esac
+}
+
+captured="$(jq -r '.captured_at' "$manifest")"
+ruby="$(jq -r '.runtime.ruby' "$manifest")"
+rails="$(jq -r '.runtime.rails' "$manifest")"
+mcp="$(jq -r '.runtime.mcp' "$manifest")"
+runs="$(jq -r '.tests.runs' "$manifest")"
+assertions="$(jq -r '.tests.assertions' "$manifest")"
+failures="$(jq -r '.tests.failures' "$manifest")"
+errors="$(jq -r '.tests.errors' "$manifest")"
+tools="$(jq -r '.mcp.allowed_tools | join(", ")' "$manifest")"
+
+printf '%sRETO B · PANEL DE EVIDENCIA MCP%s\n' "$bold$cyan" "$reset"
+printf 'Resumen de evidencia registrada; no inicia un túnel, no usa .env y no imprime tokens, grants ni secretos.\n'
+
+headline 'Calidad reproducible local'
+label 'Capturada el' "$captured"
+label 'Runtime' "Ruby $ruby · Rails $rails · MCP $mcp"
+label 'Suite automatizada' "$runs runs · $assertions assertions · ${green}$failures failures · $errors errors${reset}"
+label 'Comando registrado' "bundle exec ruby bin/verify"
+printf '\n  %sLectura:%s estas pruebas validan comportamiento local; no sustituyen una conexión en vivo con AIFindr.\n' "$bold" "$reset"
+
+headline 'Integración AIFindr registrada'
+label 'MCP habilitado' "$(pass "$(jq -r '.mcp.aifindr_enabled' "$manifest")")"
+label 'Scope concedido' "bank:actions — $(pass "$(jq -r '.integrated_acceptance.oauth_scope_granted' "$manifest")")"
+label 'Allowlist exacta' "$tools"
+label 'Discovery de tools' "$(pass "$(jq -r '.integrated_acceptance.exact_tool_discovery' "$manifest")")"
+label 'Sin secretos/grants' "$(pass "$(jq -r '(.integrated_acceptance.secrets_or_grants_recorded | not)' "$manifest")")"
+
+headline 'Recorrido seguro observado'
+label 'Consulta de tarjeta' "$(pass "$(jq -r '.integrated_acceptance.readable_card_status_after_publish' "$manifest")")"
+label 'Propuesta sin ejecutar' "$(pass "$(jq -r '.integrated_acceptance.proposal_without_execution' "$manifest")")"
+label 'Confirmación humana' "$(jq -r '.integrated_acceptance.human_confirmation' "$manifest")"
+label 'Acción final worker' "$(jq -r '.integrated_acceptance.worker_final_action_status' "$manifest")"
+label 'Tarjeta simulada final' "$(jq -r '.integrated_acceptance.worker_final_card_status' "$manifest")"
+label 'Bypass conversacional' "$(pass "$(jq -r '.integrated_acceptance.conversation_bypass_refused' "$manifest")")"
+label 'Regresión Parte 1' "$(pass "$(jq -r '.integrated_acceptance.part_1_minimum_clarification_regression' "$manifest")")"
+printf '\n  %sFlujo probado:%s ACTIVE → PENDING_CONFIRMATION → CONFIRMED → EXECUTED; tarjeta → BLOCKED.\n' "$bold" "$reset"
+printf '  %sInvariante:%s ningún tool MCP confirma ni ejecuta la acción; la aprobación sucede sólo en la página humana.\n' "$bold" "$reset"
+
+headline 'Validación viva posterior a la corrección'
+label 'Entorno' "$(jq -r '.browser_live_validation.environment' "$manifest")"
+label 'Página humana cargó' "$(pass "$(jq -r '.browser_live_validation.human_confirmation_page_loaded' "$manifest")")"
+label 'Secuencia observada' "$(jq -r '.browser_live_validation.start_card_status' "$manifest") → $(jq -r '.browser_live_validation.proposal_status_before_human_confirmation' "$manifest") → $(jq -r '.browser_live_validation.confirmation_result' "$manifest") → $(jq -r '.browser_live_validation.worker_result' "$manifest")"
+label 'Estado final desde AIFindr' "$(jq -r '.browser_live_validation.final_card_status_from_aifindr' "$manifest")"
+label 'Sin grants/IDs' "$(pass "$(jq -r '(.browser_live_validation.identifiers_or_grants_recorded | not)' "$manifest")")"
+
+headline 'Prompt publicado y trazabilidad'
+label 'Workflow' "Agent Workflow"
+label 'Contrato conductual' "Confirmado; texto, ID y digest del prompt se excluyeron"
+label 'Trazabilidad pública' "evidence/manifest.json (resultados agregados sanitizados)"
+
+headline 'Límites explícitos — no presentarlos como cubiertos'
+jq -r '.not_run[]' "$manifest" | while IFS= read -r item; do
+  printf '  %s•%s %s\n' "$yellow" "$reset" "$(limit_label "$item")"
+done
+
+headline 'Cómo auditarlo'
+printf '  1. Repetir pruebas: %s./reto-b-mcp/bin/show-evidence --verify%s\n' "$bold" "$reset"
+printf '  2. Ver explicación de cobertura: %sreto-b-mcp/docs/test-evidence.md%s\n' "$bold" "$reset"
+printf '  3. Ver contrato y diagrama: %sreto-b-mcp/docs/aifindr-integration-contract.md%s\n' "$bold" "$reset"
+printf '  4. Reproducir integración con credenciales propias: %sreto-b-mcp/docs/demo-runbook.md%s\n' "$bold" "$reset"

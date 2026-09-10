@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+require 'bundler/setup'
+require_relative '../lib/runtime'
+Dir.chdir(File.expand_path('..', __dir__))
+domain = Gateway::Runtime.domain
+begin
+  loop do
+    domain.expire_pending
+    domain.reconcile
+    domain.work
+    break if ARGV.include?('--once')
+    sleep 1
+  end
+ensure
+  domain.close
+end

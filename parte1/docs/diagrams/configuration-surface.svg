@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Parte 1 — superficie de cambio y prueba reproducible</title>
+  <desc id="desc">Un único prompt de Agent Workflow cambia. Workflow, modelo, conocimiento, tools, PII y schema quedan fijos. Dos versiones inmutables se prueban por PromptTest sin publicar cambios.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#123148"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity=".3"/></filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#6edff5"/></marker>
+    <style>
+      .h{font:700 42px system-ui,-apple-system,sans-serif;fill:#f5f8fc}.s{font:500 22px system-ui,-apple-system,sans-serif;fill:#b9d2e1}.k{font:700 18px system-ui,-apple-system,sans-serif;letter-spacing:2px}.b{font:700 26px system-ui,-apple-system,sans-serif;fill:#f5f8fc}.t{font:500 21px system-ui,-apple-system,sans-serif;fill:#c8dae4}.small{font:500 18px system-ui,-apple-system,sans-serif;fill:#a9c4d2}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <text x="90" y="90" class="k" fill="#62d9f3">PARTE 1 · CONFIGURACIÓN CONTROLADA</text>
+  <text x="90" y="146" class="h">Una superficie cambia; el resto permanece fijo</text>
+  <text x="90" y="184" class="s">La comparación se ejecuta contra versiones inmutables mediante PromptTest, sin publicar ni reemplazar la configuración.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="90" y="245" width="620" height="335" rx="26" fill="#0e2131" stroke="#20cbe9" stroke-width="3"/>
+    <text x="130" y="300" class="k" fill="#64dff5">PROYECTO PUBLICADO · AGENT WORKFLOW</text>
+    <rect x="130" y="332" width="540" height="98" rx="16" fill="#123b4d" stroke="#00f0ff" stroke-width="3"/>
+    <text x="160" y="372" class="b">PROMPT DEL AGENTE</text>
+    <text x="160" y="405" class="t">ÚNICA SUPERFICIE DE CAMBIO</text>
+    <g fill="#0b1723" stroke="#365d72" stroke-width="2">
+      <rect x="130" y="464" width="160" height="72" rx="12"/><rect x="306" y="464" width="160" height="72" rx="12"/><rect x="482" y="464" width="188" height="72" rx="12"/>
+    </g>
+    <text x="154" y="507" class="small">workflow: Agent</text>
+    <text x="337" y="507" class="small">modelo · KB</text>
+    <text x="504" y="507" class="small">tools · PII · schema</text>
+  </g>
+
+  <path d="M730 412 H855" stroke="#6edff5" stroke-width="5" marker-end="url(#arrow)"/>
+  <text x="744" y="383" class="k" fill="#6edff5">SIN MUTAR CONFIGURACIÓN</text>
+
+  <g filter="url(#shadow)">
+    <rect x="885" y="245" width="625" height="335" rx="26" fill="#0e2131" stroke="#6edff5" stroke-width="3"/>
+    <text x="925" y="300" class="k" fill="#6edff5">PRIVATE API · PROMPTTEST</text>
+    <rect x="925" y="337" width="254" height="112" rx="16" fill="#3b1b33" stroke="#ff5b92" stroke-width="3"/>
+    <text x="952" y="378" class="b">ANTES</text>
+    <text x="952" y="410" class="t">versión inmutable</text>
+    <rect x="1215" y="337" width="254" height="112" rx="16" fill="#123c36" stroke="#00ff99" stroke-width="3"/>
+    <text x="1242" y="378" class="b">DESPUÉS</text>
+    <text x="1242" y="410" class="t">versión inmutable</text>
+    <path d="M1179 393 H1207" stroke="#f5f8fc" stroke-width="4" marker-end="url(#arrow)"/>
+    <text x="925" y="495" class="t">Dos preguntas abiertas · cuatro ejecuciones · respuestas sanitizadas</text>
+    <text x="925" y="528" class="small">Crea conversaciones de prueba; no publica un prompt</text>
+    <text x="925" y="554" class="small">ni cambia workflow, modelo, KB o tools.</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="205" y="658" width="1190" height="142" rx="24" fill="#0b1723" stroke="#415f72" stroke-width="2"/>
+    <text x="250" y="711" class="k" fill="#00ff99">EVIDENCIA HUMANA PARA EL DEMO</text>
+    <text x="250" y="755" class="b">Pregunta abierta → respuesta antes (catálogo prematuro)  /  respuesta después (aclaración mínima)</text>
+    <text x="250" y="784" class="small">Dos casos: recomendación de tarjeta sin criterio y financiamiento sin finalidad. Sin IDs, hashes, credenciales ni datos identificables.</text>
+  </g>
+</svg>

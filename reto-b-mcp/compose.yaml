@@ -1,0 +1,29 @@
+services:
+  web:
+    build: .
+    env_file: .env
+    environment:
+      PUMA_BIND: tcp://0.0.0.0:9292
+    ports:
+      - "127.0.0.1:9292:9292"
+    volumes:
+      - gateway-data:/app/storage
+      - ./secrets:/app/secrets:ro
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+  worker:
+    build: .
+    env_file: .env
+    command: ["bundle", "exec", "ruby", "bin/worker"]
+    volumes:
+      - gateway-data:/app/storage
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  gateway-data:

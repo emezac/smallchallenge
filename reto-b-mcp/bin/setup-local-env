@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+require 'securerandom'
+require 'tempfile'
+
+root = File.expand_path('..', __dir__)
+target = File.join(root, '.env')
+abort '.env already exists; refusing to overwrite it' if File.exist?(target)
+
+values = {
+  # These placeholders are intentionally non-routable. Replace them with
+  # values from the reviewer's own temporary integration; never commit .env.
+  'PUBLIC_ORIGIN' => 'https://gateway.example.invalid',
+  'DATABASE_PATH' => 'storage/gateway.sqlite3',
+  'AUDIT_KEY' => SecureRandom.hex(32),
+  'AUDIT_KEY_ID' => 'v1',
+  'AUDIT_PREVIOUS_KEYS_JSON' => '{}',
+  'SECRET_KEY_BASE' => SecureRandom.hex(64),
+  'OAUTH_ISSUER' => '',
+  'OAUTH_JWKS_FILE' => 'secrets/issuer-jwks.json',
+  'OAUTH_PUBLIC_KEY_FILE' => '',
+  'OAUTH_REVOKED_JTIS' => '',
+  'BUNDLE_PATH' => 'vendor/bundle'
+}
+
+Tempfile.create('.env', root) do |file|
+  file.chmod(0o600)
+  values.each { |name, value| file.puts("#{name}=#{value}") }
+  file.flush
+  file.fsync
+  File.rename(file.path, target)
+end
+puts 'Created private .env with independent local secrets.'

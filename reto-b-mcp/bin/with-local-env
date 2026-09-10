@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+root = File.expand_path('..', __dir__)
+path = File.join(root, '.env')
+abort 'Run bin/setup-local-env first' unless File.file?(path)
+abort '.env permissions must be 0600' unless File.stat(path).mode & 0o077 == 0
+abort 'Command required' if ARGV.empty?
+
+File.foreach(path, chomp: true) do |line|
+  next if line.empty? || line.start_with?('#')
+  name, value = line.split('=', 2)
+  abort 'Invalid .env entry' unless name&.match?(/\A[A-Z][A-Z0-9_]*\z/) && value
+  ENV[name] = value
+end
+Dir.chdir(root)
+exec(*ARGV)

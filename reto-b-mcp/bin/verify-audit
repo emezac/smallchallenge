@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+require 'bundler/setup'
+require_relative '../lib/runtime'
+Dir.chdir(File.expand_path('..', __dir__))
+path = ENV.fetch('DATABASE_PATH', 'storage/gateway.sqlite3')
+abort 'Database does not exist' unless File.file?(path)
+domain = Gateway::Runtime.domain
+begin
+  abort 'Audit verification FAILED' unless domain.verify_audit
+  puts 'Audit verification passed (tail truncation requires an external checkpoint).'
+ensure
+  domain.close
+end
