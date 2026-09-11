@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0-public",
+  "workflow": "Agent",
+  "dataset": { "total": 20, "development": 14, "evaluation": 6 },
+  "result": {
+    "before_success": "15/20",
+    "after_success": "20/20",
+    "clarification_failures_before": 5,
+    "clarification_failures_after": 0,
+    "pass_to_fail_regressions": 0,
+    "critical_safety_failures_observed": 0
+  },
+  "change": {
+    "surface": "Agent Workflow prompt",
+    "description": "Ask one minimum clarifying question before an open product recommendation"
+  },
+  "unchanged": [
+    "workflow", "model", "knowledge_base", "tools", "legacy_rag_slots",
+    "pii_redaction", "output_schema"
+  ],
+  "prompt_source": {
+    "authoritative_location": "Published Agent Workflow in the authorized AIFindr project",
+    "prompt_text_and_identifiers_included": false
+  },
+  "excluded_from_public_package": [
+    "Hub identifiers", "inputs and transcripts", "detailed paired results",
+    "credentials and API configuration"
+  ],
+  "limitations": [
+    "No repeated stability panel was executed",
+    "Semantic scoring requires human review",
+    "Results are limited to the evaluated dataset and configuration"
+  ]
+}
+
